@@ -18,7 +18,7 @@ interface ShippingAddress {
 }
 
 export default function CheckoutPage() {
-  const { cart, cartTotal, cartCount, clearCart } = useCart();
+  const { cart, cartTotal, cartCount, clearCart, isLoggedIn, setIsLoggedIn, syncCartWithDb } = useCart();
   const router = useRouter();
 
   const [address, setAddress] = useState<ShippingAddress>({
@@ -31,10 +31,18 @@ export default function CheckoutPage() {
     phone: '',
   });
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isMockMode, setIsMockMode] = useState(false);
+
+  // Authentication Fields (for inline checkout auth overlay)
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authName, setAuthName] = useState('');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
 
   // Pre-fill profile info if logged in
   useEffect(() => {
@@ -48,20 +56,18 @@ export default function CheckoutPage() {
             ...prev,
             name: user.name || '',
           }));
+          setIsLoggedIn(true);
+        } else {
+          setIsLoggedIn(false);
         }
       } catch (e) {
         console.error('Failed to prefill user info:', e);
+      } finally {
+        setLoading(false);
       }
     };
     fetchProfile();
-  }, []);
-
-  // Redirect if cart empty
-  useEffect(() => {
-    if (cart.length === 0 && !submitting) {
-      // Don't redirect immediately if we are in the middle of clearing it on success
-    }
-  }, [cart, submitting]);
+  }, [setIsLoggedIn]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -69,6 +75,43 @@ export default function CheckoutPage() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError(null);
+    setAuthLoading(true);
+
+    const endpoint = authMode === 'register' ? '/api/auth/register' : '/api/auth/login';
+    const payload = authMode === 'register' 
+      ? { name: authName, email: authEmail, password: authPassword } 
+      : { email: authEmail, password: authPassword };
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = (await res.json()) as any;
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Authentication failed');
+      }
+
+      setIsLoggedIn(true);
+      setEmail(data.user.email);
+      setAddress((prev) => ({
+        ...prev,
+        name: data.user.name || '',
+      }));
+      await syncCartWithDb(); // Merges local storage items into user's DB cart on login
+    } catch (err: any) {
+      setAuthError(err.message);
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
   const validateForm = () => {
@@ -133,33 +176,15 @@ export default function CheckoutPage() {
   };
 
   const launchRazorpay = (orderData: any) => {
-    if (typeof window === 'undefined' || !(window as any).Razorpay) {
-      setError('Payment gateway library failed to load. Please refresh and try again.');
-      setSubmitting(false);
-      return;
-    }
-
     const options = {
-      key: orderData.keyId,
+      key: orderData.key,
       amount: orderData.amount,
       currency: orderData.currency,
       name: 'VN Aroma',
-      description: 'Luxury Scent Selection Purchase',
+      description: 'Fragrance order payment',
       image: '/images/trio.png',
       order_id: orderData.id,
-      prefill: {
-        name: address.name,
-        email: email,
-        contact: address.phone,
-      },
-      notes: {
-        receipt: orderData.receipt,
-      },
-      theme: {
-        color: '#111111',
-      },
       handler: async function (response: any) {
-        setSubmitting(true);
         await handlePaymentVerify({
           razorpay_order_id: response.razorpay_order_id,
           razorpay_payment_id: response.razorpay_payment_id,
@@ -168,15 +193,21 @@ export default function CheckoutPage() {
           isMock: false,
         });
       },
-      modal: {
-        ondismiss: function () {
-          setSubmitting(false);
-          setError('Payment was cancelled.');
-        },
+      prefill: {
+        name: address.name,
+        email: email,
+        contact: address.phone,
+      },
+      theme: {
+        color: '#111111',
       },
     };
 
     const rzp = new (window as any).Razorpay(options);
+    rzp.on('payment.failed', function (response: any) {
+      setError(response.error.description || 'Payment Transaction Failed.');
+      setSubmitting(false);
+    });
     rzp.open();
   };
 
@@ -217,6 +248,14 @@ export default function CheckoutPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FAF9F6] flex items-center justify-center font-sans">
+        <Loader2 className="w-8 h-8 text-[#C5A880] animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#FAF9F6] min-h-screen py-16 font-sans">
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
@@ -240,139 +279,229 @@ export default function CheckoutPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-            {/* Delivery Form - Left Column */}
-            <form onSubmit={handleCheckoutSubmit} className="lg:col-span-7 bg-white border border-[#E6E3DB] p-8 space-y-6">
-              <h2 className="text-lg font-serif font-semibold text-[#111111] uppercase tracking-wider pb-4 border-b border-[#E6E3DB]">
-                Delivery Information
-              </h2>
-
-              {error && (
-                <div className="p-4 bg-red-50 border-l-2 border-red-600 text-xs text-red-700 uppercase tracking-widest font-semibold">
-                  {error}
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-xs uppercase tracking-wider font-semibold text-gray-700 block mb-1">Email Address *</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-wider font-semibold text-gray-700 block mb-1">Phone Number *</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={address.phone}
-                    onChange={handleInputChange}
-                    placeholder="e.g. +91 9876543210"
-                    className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs uppercase tracking-wider font-semibold text-gray-700 block mb-1">Recipient Name *</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={address.name}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
-                    required
-                  />
+            
+            {/* LEFT COLUMN: AUTHENTICATION OR SHIPPING FORM */}
+            {!isLoggedIn ? (
+              <div className="lg:col-span-7 p-8 bg-white/40 backdrop-blur-md border border-white/20 shadow-xl space-y-6">
+                <div className="flex border-b border-[#E6E3DB] pb-4">
+                  <button
+                    type="button"
+                    onClick={() => { setAuthMode('login'); setAuthError(null); }}
+                    className={`flex-1 text-center text-xs uppercase tracking-wider font-semibold pb-2 border-b-2 transition-all ${
+                      authMode === 'login' ? 'border-[#C5A880] text-black font-bold' : 'border-transparent text-gray-400'
+                    }`}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setAuthMode('register'); setAuthError(null); }}
+                    className={`flex-1 text-center text-xs uppercase tracking-wider font-semibold pb-2 border-b-2 transition-all ${
+                      authMode === 'register' ? 'border-[#C5A880] text-black font-bold' : 'border-transparent text-gray-400'
+                    }`}
+                  >
+                    Create Account
+                  </button>
                 </div>
 
-                <div>
-                  <label className="text-xs uppercase tracking-wider font-semibold text-gray-700 block mb-1">Street Address *</label>
-                  <input
-                    type="text"
-                    name="addressLine1"
-                    value={address.addressLine1}
-                    onChange={handleInputChange}
-                    placeholder="House / Apartment number, street name"
-                    className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
-                    required
-                  />
-                </div>
+                <h2 className="text-lg font-serif font-light text-center text-[#111111] tracking-tight">
+                  {authMode === 'login' ? 'Welcome Back to VN Aroma' : 'Become a Connoisseur'}
+                </h2>
 
-                <div>
-                  <label className="text-xs uppercase tracking-wider font-semibold text-gray-700 block mb-1">Apartment, Suite, Unit, etc. (Optional)</label>
-                  <input
-                    type="text"
-                    name="addressLine2"
-                    value={address.addressLine2}
-                    onChange={handleInputChange}
-                    placeholder="Suite, unit, building, floor, etc."
-                    className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
-                  />
-                </div>
-              </div>
+                <p className="text-[11px] text-center text-gray-500 font-light max-w-sm mx-auto">
+                  Please sign in or create an account to secure your purchase and view your olfactory order tracking.
+                </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div>
-                  <label className="text-xs uppercase tracking-wider font-semibold text-gray-700 block mb-1">City *</label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={address.city}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-wider font-semibold text-gray-700 block mb-1">State / Province *</label>
-                  <input
-                    type="text"
-                    name="state"
-                    value={address.state}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-wider font-semibold text-gray-700 block mb-1">PIN / Postal Code *</label>
-                  <input
-                    type="text"
-                    name="postalCode"
-                    value={address.postalCode}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
-                    required
-                  />
-                </div>
-              </div>
+                {authError && (
+                  <div className="p-3 bg-red-50 border-l-2 border-red-500 text-xs text-red-700 uppercase tracking-widest font-semibold">
+                    {authError}
+                  </div>
+                )}
 
-              <div className="pt-6">
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full py-4 bg-[#111111] text-white uppercase text-xs font-bold tracking-widest hover:bg-[#C5A880] transition-colors flex items-center justify-center gap-2"
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Processing Checkout...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="w-4 h-4" />
-                      Pay with Razorpay (Test Mode)
-                    </>
+                <form onSubmit={handleAuthSubmit} className="space-y-4">
+                  {authMode === 'register' && (
+                    <div>
+                      <label className="text-[10px] uppercase tracking-wider font-semibold text-gray-700 block mb-1">Full Name</label>
+                      <input
+                        type="text"
+                        value={authName}
+                        onChange={(e) => setAuthName(e.target.value)}
+                        className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
+                        placeholder="e.g. Jean Patou"
+                        required
+                      />
+                    </div>
                   )}
-                </button>
+
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wider font-semibold text-gray-700 block mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      value={authEmail}
+                      onChange={(e) => setAuthEmail(e.target.value)}
+                      className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
+                      placeholder="connoisseur@vnaroma.com"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wider font-semibold text-gray-700 block mb-1">Password</label>
+                    <input
+                      type="password"
+                      value={authPassword}
+                      onChange={(e) => setAuthPassword(e.target.value)}
+                      className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
+                      placeholder="••••••••"
+                      required
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={authLoading}
+                    className="w-full py-4 bg-[#111111] text-white text-xs uppercase tracking-widest font-bold hover:bg-[#C5A880] transition-colors flex items-center justify-center gap-2"
+                  >
+                    {authLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    {authMode === 'login' ? 'Authenticate' : 'Register & Unveil'}
+                  </button>
+                </form>
               </div>
-            </form>
+            ) : (
+              /* Delivery Form - Left Column */
+              <form onSubmit={handleCheckoutSubmit} className="lg:col-span-7 bg-white border border-[#E6E3DB] p-8 space-y-6">
+                <h2 className="text-lg font-serif font-semibold text-[#111111] uppercase tracking-wider pb-4 border-b border-[#E6E3DB]">
+                  Delivery Information
+                </h2>
+
+                {error && (
+                  <div className="p-4 bg-red-50 border-l-2 border-red-600 text-xs text-red-700 uppercase tracking-widest font-semibold">
+                    {error}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="text-xs uppercase tracking-wider font-semibold text-gray-700 block mb-1">Email Address *</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs uppercase tracking-wider font-semibold text-gray-700 block mb-1">Phone Number *</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={address.phone}
+                      onChange={handleInputChange}
+                      placeholder="e.g. +91 9876543210"
+                      className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs uppercase tracking-wider font-semibold text-gray-700 block mb-1">Recipient Name *</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={address.name}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs uppercase tracking-wider font-semibold text-gray-700 block mb-1">Street Address *</label>
+                    <input
+                      type="text"
+                      name="addressLine1"
+                      value={address.addressLine1}
+                      onChange={handleInputChange}
+                      placeholder="House / Apartment number, street name"
+                      className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs uppercase tracking-wider font-semibold text-gray-700 block mb-1">Apartment, Suite, Unit, etc. (Optional)</label>
+                    <input
+                      type="text"
+                      name="addressLine2"
+                      value={address.addressLine2}
+                      onChange={handleInputChange}
+                      placeholder="Suite, unit, building, floor, etc."
+                      className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  <div>
+                    <label className="text-xs uppercase tracking-wider font-semibold text-gray-700 block mb-1">City *</label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={address.city}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs uppercase tracking-wider font-semibold text-gray-700 block mb-1">State / Province *</label>
+                    <input
+                      type="text"
+                      name="state"
+                      value={address.state}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs uppercase tracking-wider font-semibold text-gray-700 block mb-1">PIN / Postal Code *</label>
+                    <input
+                      type="text"
+                      name="postalCode"
+                      value={address.postalCode}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 bg-[#FAF9F6] border border-[#E6E3DB] text-sm focus:outline-none focus:border-black"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-6">
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full py-4 bg-[#111111] text-white uppercase text-xs font-bold tracking-widest hover:bg-[#C5A880] transition-colors flex items-center justify-center gap-2"
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Processing Checkout...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-4 h-4" />
+                        Pay with Razorpay (Test Mode)
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
 
             {/* Order Review - Right Column */}
             <div className="lg:col-span-5 bg-white border border-[#E6E3DB] p-8 space-y-6">

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { ShoppingBag, ArrowDown, Sparkles, Flame, Droplets, Trees } from 'lucide-react';
 import Link from 'next/link';
+import PromotionalCarousel from '@/components/PromotionalCarousel';
 
 interface Product {
   id: string;
@@ -39,10 +40,10 @@ export default function HomePageClient({ products }: HomePageClientProps) {
   // Scent family icons mapper
   const getFamilyIcon = (family: string) => {
     switch (family) {
-      case 'Woody': return <Trees className="w-4 h-4" />;
-      case 'Floral': return <Sparkles className="w-4 h-4" />;
-      case 'Spicy': return <Flame className="w-4 h-4" />;
-      case 'Fresh': return <Droplets className="w-4 h-4" />;
+      case 'Woody': return <Trees className="w-3 h-3" />;
+      case 'Floral': return <Sparkles className="w-3 h-3" />;
+      case 'Spicy': return <Flame className="w-3 h-3" />;
+      case 'Fresh': return <Droplets className="w-3 h-3" />;
       default: return null;
     }
   };
@@ -86,7 +87,7 @@ export default function HomePageClient({ products }: HomePageClientProps) {
     <div className="bg-[#FAF9F6] pb-24 font-sans relative">
       {/* Toast Notification */}
       {toast.show && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#111111] text-[#FAF9F6] border border-[#C5A880] px-6 py-4 flex items-center justify-between shadow-2xl animate-fade-in-up">
+        <div className="fixed bottom-6 right-6 z-50 bg-[#111111]/90 backdrop-blur-md text-[#FAF9F6] border border-[#C5A880] px-6 py-4 flex items-center justify-between shadow-2xl animate-fade-in-up">
           <div className="flex items-center gap-3">
             <ShoppingBag className="w-4 h-4 text-[#C5A880]" />
             <p className="text-xs uppercase tracking-widest font-semibold">{toast.message}</p>
@@ -100,50 +101,8 @@ export default function HomePageClient({ products }: HomePageClientProps) {
         </div>
       )}
 
-      {/* Hero Banner */}
-      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden border-b border-[#E6E3DB]">
-        {/* Parallax Background */}
-        <div className="absolute inset-0 bg-[#FAF9F6]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/trio.png"
-            alt="VN Aroma Premium Scent Trio"
-            className="w-full h-full object-cover opacity-15 mix-blend-darken scale-105 transition-transform duration-1000"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#FAF9F6] via-transparent to-transparent" />
-        </div>
-
-        <div className="relative text-center max-w-4xl px-4 space-y-8 animate-fade-in-up">
-          <span className="text-[10px] uppercase tracking-[0.4em] text-[#C5A880] font-semibold block">
-            Boutique Fragrance House
-          </span>
-          <h2 className="text-4xl sm:text-7xl font-serif font-light text-[#111111] tracking-tight leading-none">
-            The Poetry of <br />
-            <span className="font-serif italic text-[#C5A880]">Sensory Silence</span>
-          </h2>
-          <p className="text-xs sm:text-sm text-gray-500 uppercase tracking-widest max-w-xl mx-auto leading-relaxed">
-            Minimalist design. Complex formulations. Pure emotional resonance. Unisex fragrances crafted in small batches.
-          </p>
-          <div className="pt-4 flex flex-col sm:flex-row justify-center gap-4">
-            <Link
-              href="#catalog"
-              className="inline-flex items-center justify-center px-8 py-3.5 bg-[#111111] text-white uppercase text-xs tracking-widest hover:bg-[#C5A880] transition-colors"
-            >
-              Explore Collection
-            </Link>
-            <Link
-              href="/#about"
-              className="inline-flex items-center justify-center px-8 py-3.5 border border-[#111111] text-[#111111] uppercase text-xs tracking-widest hover:bg-[#111111]/5 transition-colors"
-            >
-              Our Heritage
-            </Link>
-          </div>
-          <div className="absolute bottom-[-10vh] left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-            <span className="text-[9px] uppercase tracking-widest text-gray-400">Scroll Down</span>
-            <ArrowDown className="w-3.5 h-3.5 text-gray-400 animate-bounce" />
-          </div>
-        </div>
-      </section>
+      {/* Promotional Slideshow Header */}
+      <PromotionalCarousel />
 
       {/* Scent Philosophy Callout */}
       <section id="about" className="py-24 bg-white border-b border-[#E6E3DB]">
@@ -177,7 +136,7 @@ export default function HomePageClient({ products }: HomePageClientProps) {
                 className={`px-4 py-2 border transition-all ${
                   activeFilter === filter
                     ? 'bg-[#111111] text-white border-[#111111]'
-                    : 'bg-transparent text-gray-500 border-[#E6E3DB] hover:border-gray-800 hover:text-black'
+                    : 'bg-white/40 backdrop-blur-md text-gray-500 border-[#E6E3DB] hover:border-gray-800 hover:text-black'
                 }`}
               >
                 {filter}
@@ -187,76 +146,76 @@ export default function HomePageClient({ products }: HomePageClientProps) {
         </div>
 
         {/* Product Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
           {filteredProducts.map((product) => {
             const isSet = product.id === 'prod-discovery-trio';
             return (
               <Link
                 key={product.id}
                 href={`/product/${product.slug}`}
-                className="group flex flex-col justify-between"
+                className="group flex flex-col justify-between p-6 bg-white/30 backdrop-blur-md border border-white/20 shadow-sm hover:shadow-xl hover:bg-white/50 hover:border-[#C5A880]/30 transition-all duration-500"
               >
-                <div>
+                <div className="relative">
                   {/* Image Holder with Quick Add hover */}
-                  <div className="w-full aspect-[4/5] bg-white border border-[#E6E3DB] relative overflow-hidden flex items-center justify-center p-8 transition-colors duration-500 group-hover:border-gray-800">
+                  <div className="w-full aspect-square relative overflow-hidden flex items-center justify-center p-4">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={product.imageUrls[0]}
                       alt={product.name}
-                      className="object-contain h-[75%] w-[75%] transition-transform duration-700 group-hover:scale-105"
+                      className="object-contain h-[90%] w-[90%] transition-transform duration-700 group-hover:scale-103"
                     />
 
                     {/* Featured/Bestseller badge */}
                     {product.isFeatured && (
-                      <span className="absolute top-4 left-4 text-[9px] uppercase tracking-widest bg-[#111111] text-white px-2 py-1">
+                      <span className="absolute top-0 left-0 text-[8px] uppercase tracking-widest bg-[#111111] text-white px-2 py-1 z-10">
                         Bestseller
                       </span>
                     )}
 
                     {/* Scent Family Identifier */}
-                    <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-[#FAF9F6] border border-[#E6E3DB] px-2 py-1 text-[9px] uppercase tracking-widest text-[#C5A880]">
+                    <div className="absolute top-0 right-0 flex items-center gap-1 bg-white/70 backdrop-blur-sm border border-white/30 px-2 py-0.5 text-[8px] uppercase tracking-widest text-[#C5A880] z-10 font-bold">
                       {product.tags.includes('Woody') && getFamilyIcon('Woody')}
                       {product.tags.includes('Floral') && getFamilyIcon('Floral')}
                       {product.tags.includes('Spicy') && getFamilyIcon('Spicy')}
                       {product.tags.includes('Fresh') && getFamilyIcon('Fresh')}
-                      <span>{product.tags.split(',')[0]}</span>
+                      <span className="ml-1">{product.tags.split(',')[0]}</span>
                     </div>
 
                     {/* Quick Add Overlay */}
-                    <div className="absolute inset-x-4 bottom-4 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                    <div className="absolute inset-x-2 bottom-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-10">
                       <button
                         onClick={(e) => handleQuickAdd(product, e)}
-                        className="w-full bg-[#111111] text-white py-3 text-xs uppercase tracking-widest font-semibold hover:bg-[#C5A880] transition-colors flex items-center justify-center gap-2 shadow-lg"
+                        className="w-full bg-[#111111]/90 backdrop-blur-sm text-white py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-[#C5A880] transition-colors flex items-center justify-center gap-1.5 shadow-md"
                       >
-                        <ShoppingBag className="w-3.5 h-3.5" />
+                        <ShoppingBag className="w-3 h-3" />
                         Quick Add ({isSet ? '3 x 50ml' : '50ml'})
                       </button>
                     </div>
                   </div>
 
                   {/* Scent Notes teaser */}
-                  <p className="text-[10px] text-[#C5A880] uppercase tracking-[0.2em] font-semibold mt-6">
+                  <p className="text-[9px] text-[#C5A880] uppercase tracking-[0.2em] font-semibold mt-4">
                     {product.topNotes.split(',')[0]} · {product.heartNotes.split(',')[0]} · {product.baseNotes.split(',')[0]}
                   </p>
 
-                  <h3 className="font-serif text-xl font-light text-[#111111] mt-2 group-hover:text-[#C5A880] transition-colors">
+                  <h3 className="font-serif text-lg font-light text-[#111111] mt-1.5 group-hover:text-[#C5A880] transition-colors">
                     {product.name}
                   </h3>
-                  <p className="text-xs text-gray-500 italic mt-1 leading-normal">
+                  <p className="text-[11px] text-gray-500 italic mt-0.5 leading-snug">
                     {product.tagline}
                   </p>
                 </div>
 
-                <div className="mt-4 flex items-baseline gap-2 border-t border-[#E6E3DB]/40 pt-4">
-                  <span className="text-sm font-semibold text-[#111111]">
+                <div className="mt-4 flex items-baseline gap-2 border-t border-black/5 pt-3.5">
+                  <span className="text-xs font-bold text-[#111111]">
                     ₹{product.price.toLocaleString('en-IN')}
                   </span>
                   {product.compareAtPrice && (
-                    <span className="text-xs text-gray-400 line-through">
+                    <span className="text-[10px] text-gray-400 line-through">
                       ₹{product.compareAtPrice.toLocaleString('en-IN')}
                     </span>
                   )}
-                  <span className="text-[10px] uppercase tracking-wider text-gray-400 ml-auto">
+                  <span className="text-[9px] uppercase tracking-wider text-gray-400 ml-auto font-semibold">
                     {isSet ? 'Set' : '50ml'}
                   </span>
                 </div>
