@@ -1,0 +1,9 @@
+name = "vn-aroma"
+compatibility_date = "2024-01-01"
+compatibility_flags = [ "nodejs_compat" ]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "vn-aroma-db"
+database_id = "local-d1-placeholder"
+migrations_dir = "./drizzle"

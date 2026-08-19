@@ -1,0 +1,6 @@
+# Cloudflare Wrangler Local Secrets (read by wrangler dev)
+AUTH_SECRET="your_jwt_auth_secret_at_least_32_characters"
+RAZORPAY_KEY_ID="your_razorpay_key_id"
+RAZORPAY_KEY_SECRET="your_razorpay_key_secret"
+RESEND_API_KEY="re_your_resend_api_key"
+EMAIL_FROM="VN Aroma <onboarding@resend.dev>"

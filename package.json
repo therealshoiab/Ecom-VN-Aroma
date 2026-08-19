@@ -5,22 +5,39 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "pages:build": "npx @cloudflare/next-on-pages",
+    "pages:preview": "npx wrangler pages dev .vercel/output",
+    "seed": "npx tsx src/db/seed-cli.ts",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@cloudflare/next-on-pages": "^1.13.16",
+    "better-sqlite3": "^13.0.3",
+    "clsx": "^2.1.1",
+    "drizzle-orm": "^0.45.2",
+    "framer-motion": "^13.1.0",
+    "jose": "^6.2.9",
+    "lucide-react": "^1.32.0",
     "next": "16.3.1",
+    "razorpay": "^2.9.8",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "resend": "^6.20.0",
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260819.1",
     "@tailwindcss/postcss": "^4",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.124.0"
   }
 }

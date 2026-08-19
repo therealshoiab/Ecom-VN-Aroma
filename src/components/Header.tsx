@@ -1,0 +1,105 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { useCart } from '@/context/CartContext';
+import { ShoppingBag, User, LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
+export default function Header() {
+  const { cartCount, setIsCartOpen, isLoggedIn, setIsLoggedIn, clearCart } = useCart();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      const res = await fetch('/api/auth/logout', { method: 'POST' });
+      if (res.ok) {
+        setIsLoggedIn(false);
+        await clearCart();
+        router.push('/');
+      }
+    } catch (e) {
+      console.error('Failed to log out:', e);
+    }
+  };
+
+  return (
+    <header className="sticky top-0 z-40 bg-[#FAF9F6]/80 backdrop-blur-md border-b border-[#E6E3DB] font-sans">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20">
+          {/* Nav Links - Left (Hidden on small screens) */}
+          <nav className="hidden md:flex space-x-8 text-xs uppercase tracking-widest text-[#111111]/80 font-medium">
+            <Link href="/" className="hover:text-[#C5A880] transition-colors">
+              Collection
+            </Link>
+            <Link href="/#categories" className="hover:text-[#C5A880] transition-colors">
+              Families
+            </Link>
+            <Link href="/#about" className="hover:text-[#C5A880] transition-colors">
+              About
+            </Link>
+          </nav>
+
+          {/* Logo - Center */}
+          <div className="flex-1 md:flex-none text-center md:text-left">
+            <Link href="/" className="inline-block">
+              <h1 className="text-2xl sm:text-3xl font-serif text-[#111111] font-semibold tracking-wider uppercase">
+                VN Aroma
+              </h1>
+              <p className="text-[9px] text-[#C5A880] font-sans uppercase tracking-[0.25em] -mt-1 block text-center">
+                For Men & Women
+              </p>
+            </Link>
+          </div>
+
+          {/* Actions - Right */}
+          <div className="flex items-center space-x-6 text-[#111111]">
+            {isLoggedIn ? (
+              <div className="flex items-center space-x-4">
+                <Link
+                  href="/account"
+                  className="p-1.5 hover:text-[#C5A880] transition-colors flex items-center gap-1.5 text-xs uppercase tracking-wider font-semibold"
+                  title="My Account"
+                >
+                  <User className="w-4 h-4" />
+                  <span className="hidden sm:inline">Account</span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="p-1.5 hover:text-red-600 transition-colors flex items-center gap-1 text-xs uppercase tracking-wider font-semibold"
+                  title="Log Out"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden sm:inline">Logout</span>
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/account"
+                className="p-1.5 hover:text-[#C5A880] transition-colors flex items-center gap-1.5 text-xs uppercase tracking-wider font-semibold"
+                title="Log In / Sign Up"
+              >
+                <User className="w-4 h-4" />
+                <span className="hidden sm:inline">Sign In</span>
+              </Link>
+            )}
+
+            {/* Cart Button */}
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="p-2 relative hover:text-[#C5A880] transition-colors flex items-center gap-1 text-xs uppercase tracking-widest font-semibold"
+            >
+              <ShoppingBag className="w-4.5 h-4.5" />
+              <span className="hidden sm:inline">Bag</span>
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1 bg-[#111111] text-[#FAF9F6] text-[9px] w-4.5 h-4.5 flex items-center justify-center rounded-full font-bold">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
