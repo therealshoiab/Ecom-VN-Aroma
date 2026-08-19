@@ -93,14 +93,14 @@ export default function ProductPageClient({ product, variants, related }: Produc
     <div className="bg-[#FAF9F6] pb-24 font-sans">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#111111] text-[#FAF9F6] border border-[#C5A880] px-6 py-4 flex items-center justify-between shadow-2xl animate-fade-in-up">
+        <div className="fixed bottom-6 right-6 z-50 bg-white/95 backdrop-blur-md text-[#111111] border border-[#C5A880] px-6 py-4 flex items-center justify-between shadow-2xl animate-fade-in-up rounded-lg">
           <div className="flex items-center gap-3">
             <ShoppingBag className="w-4 h-4 text-[#C5A880]" />
             <p className="text-xs uppercase tracking-widest font-semibold">{toastMessage}</p>
           </div>
           <button
             onClick={() => setIsCartOpen(true)}
-            className="ml-6 text-xs text-[#C5A880] hover:text-white uppercase tracking-widest border-b border-[#C5A880] font-bold"
+            className="ml-6 text-xs text-[#C5A880] hover:text-[#111111] uppercase tracking-widest border-b border-[#C5A880] font-bold"
           >
             View Bag
           </button>
@@ -194,10 +194,10 @@ export default function ProductPageClient({ product, variants, related }: Produc
                     setSelectedVariant(v);
                     setQuantity(1); // reset quantity selector to 1 on size swap
                   }}
-                  className={`flex-1 py-3 text-xs uppercase tracking-widest font-semibold border transition-all ${
+                  className={`flex-1 py-3 text-xs uppercase tracking-widest font-semibold border transition-all rounded-md ${
                     selectedVariant.id === v.id
-                      ? 'bg-[#111111] text-white border-[#111111]'
-                      : 'bg-transparent text-gray-500 border-[#E6E3DB] hover:border-gray-800 hover:text-black'
+                      ? 'bg-[#C5A880] text-white border-[#C5A880]'
+                      : 'bg-transparent text-gray-500 border-[#E6E3DB] hover:border-[#C5A880] hover:text-[#C5A880]'
                   }`}
                 >
                   {v.size}
@@ -252,14 +252,14 @@ export default function ProductPageClient({ product, variants, related }: Produc
             <button
               onClick={handleAddToBag}
               disabled={isOutOfStock}
-              className="w-full py-4 border border-[#111111] uppercase text-xs tracking-widest font-semibold transition-all hover:bg-[#111111] hover:text-[#FAF9F6] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 border border-[#C5A880] text-[#C5A880] uppercase text-xs tracking-widest font-bold transition-all hover:bg-[#C5A880] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
             >
               Add to Bag
             </button>
             <button
               onClick={handleBuyNow}
               disabled={isOutOfStock}
-              className="w-full py-4 bg-[#111111] text-white uppercase text-xs tracking-widest font-semibold transition-all hover:bg-[#C5A880] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 bg-[#C5A880] text-white uppercase text-xs tracking-widest font-bold transition-all hover:bg-[#b0936b] disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
             >
               Buy Now
             </button>

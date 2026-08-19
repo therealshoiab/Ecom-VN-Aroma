@@ -68,7 +68,7 @@ export default function PromotionalCarousel() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % slides.length);
-    }, 2000); // Cycle every 2 seconds
+    }, 3000); // Cycle every 3 seconds
 
     return () => clearInterval(timer);
   }, []);
@@ -82,13 +82,13 @@ export default function PromotionalCarousel() {
   };
 
   return (
-    <div className="relative w-full h-[55vh] md:h-[65vh] bg-[#111111] overflow-hidden border-b border-[#E6E3DB]/20">
+    <div className="relative w-full h-[80vh] bg-[#FAF9F6] overflow-hidden border-b border-[#E6E3DB]">
       {/* Slide Container */}
       {slides.map((slide, index) => (
         <div
           key={index}
           className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-            index === currentIndex ? 'opacity-70 pointer-events-auto scale-100' : 'opacity-0 pointer-events-none scale-105'
+            index === currentIndex ? 'opacity-95 pointer-events-auto scale-100' : 'opacity-0 pointer-events-none scale-105'
           } transform duration-1000`}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -100,25 +100,25 @@ export default function PromotionalCarousel() {
         </div>
       ))}
 
-      {/* Shadow Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#111111]/80 via-[#111111]/30 to-[#111111]/50 pointer-events-none" />
+      {/* Gentle Soft Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-white/30 via-transparent to-white/20 pointer-events-none" />
 
-      {/* Glassmorphic Promotion Banner */}
-      <div className="absolute bottom-10 left-6 right-6 md:left-12 max-w-lg z-10 p-6 md:p-8 bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl flex flex-col justify-between">
+      {/* Glassmorphic Promotion Banner - CENTERED */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] sm:w-[85%] max-w-lg z-10 p-6 md:p-8 bg-black/45 backdrop-blur-md border border-white/10 shadow-2xl flex flex-col justify-between text-center items-center rounded-lg">
         <div className="space-y-2">
-          <span className="text-[9px] uppercase tracking-[0.3em] text-[#C5A880] font-semibold block">
+          <span className="text-[10px] uppercase tracking-[0.3em] text-[#C5A880] font-semibold block">
             Seasonal Exhibition
           </span>
-          <h2 className="text-xl md:text-3xl font-serif font-light text-white tracking-tight leading-none">
+          <h2 className="text-2xl md:text-4xl font-serif font-light text-white tracking-tight leading-none">
             {slides[currentIndex].title}
           </h2>
-          <p className="text-xs text-gray-300 font-light leading-relaxed mt-2">
+          <p className="text-xs md:text-sm text-gray-200 font-light leading-relaxed mt-3">
             {slides[currentIndex].subtitle}
           </p>
         </div>
 
         {/* Indicators and buttons */}
-        <div className="flex items-center justify-between pt-6 mt-4 border-t border-white/10">
+        <div className="flex flex-col items-center gap-4 w-full pt-5 mt-4 border-t border-white/10">
           <div className="flex gap-1.5">
             {slides.map((_, idx) => (
               <span
@@ -130,16 +130,16 @@ export default function PromotionalCarousel() {
             ))}
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button
               onClick={handlePrev}
-              className="p-1.5 rounded-full bg-white/5 border border-white/15 text-white hover:bg-white/20 hover:text-[#C5A880] transition-colors"
+              className="p-2 rounded-full bg-white/5 border border-white/15 text-white hover:bg-white/20 hover:text-[#C5A880] transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={handleNext}
-              className="p-1.5 rounded-full bg-white/5 border border-white/15 text-white hover:bg-white/20 hover:text-[#C5A880] transition-colors"
+              className="p-2 rounded-full bg-white/5 border border-white/15 text-white hover:bg-white/20 hover:text-[#C5A880] transition-colors"
             >
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
@@ -149,3 +149,5 @@ export default function PromotionalCarousel() {
     </div>
   );
 }
+
+
