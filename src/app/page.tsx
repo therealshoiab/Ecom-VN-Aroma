@@ -1,32 +1,42 @@
 import { getDb } from '@/db';
 import { products } from '@/db/schema';
 import HomePageClient from '@/components/HomePageClient';
+import { staticProducts } from '@/lib/staticData';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const db = getDb();
-  
-  // Fetch all products from D1
-  const dbProducts = await db.select().from(products).all();
+  let formattedProducts = [];
 
-  // Format product image URLs from JSON
-  const formattedProducts = dbProducts.map((p) => {
-    let images: string[] = ['/images/trio.png'];
-    try {
-      const parsed = JSON.parse(p.imageUrls);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        images = parsed;
-      }
-    } catch (e) {}
+  try {
+    const db = getDb();
+    // Fetch all products from D1
+    const dbProducts = await db.select().from(products).all();
 
-    return {
+    // Format product image URLs from JSON
+    formattedProducts = dbProducts.map((p) => {
+      let images: string[] = ['/images/trio.png'];
+      try {
+        const parsed = JSON.parse(p.imageUrls);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          images = parsed;
+        }
+      } catch (e) {}
+
+      return {
+        ...p,
+        imageUrls: images,
+        isFeatured: p.isFeatured === 1,
+      };
+    });
+  } catch (e) {
+    // Database binding not found or empty (e.g. during static export build)
+    formattedProducts = staticProducts.map((p) => ({
       ...p,
-      imageUrls: images,
       isFeatured: p.isFeatured === 1,
-    };
-  });
+    }));
+  }
 
   return <HomePageClient products={formattedProducts} />;
 }
