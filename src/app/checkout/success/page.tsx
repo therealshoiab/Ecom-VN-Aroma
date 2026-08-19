@@ -1,17 +1,18 @@
 'use client';
 
-import React, { useEffect, useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
+import { CheckCircle, ArrowRight } from 'lucide-react';
 
-function CheckoutSuccessContent() {
-  const searchParams = useSearchParams();
+export default function CheckoutSuccessPage() {
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
 
   useEffect(() => {
-    setOrderNumber(searchParams.get('orderNumber'));
-  }, [searchParams]);
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      setOrderNumber(params.get('orderNumber'));
+    }
+  }, []);
 
   return (
     <div className="bg-[#FAF9F6] min-h-[75vh] flex items-center justify-center py-16 font-sans">
@@ -52,19 +53,5 @@ function CheckoutSuccessContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function CheckoutSuccessPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="bg-[#FAF9F6] min-h-[75vh] flex items-center justify-center font-sans">
-          <Loader2 className="w-8 h-8 text-[#C5A880] animate-spin" />
-        </div>
-      }
-    >
-      <CheckoutSuccessContent />
-    </Suspense>
   );
 }
