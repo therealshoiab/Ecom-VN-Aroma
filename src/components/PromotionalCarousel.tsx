@@ -88,14 +88,14 @@ export default function PromotionalCarousel() {
         <div
           key={index}
           className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-            index === currentIndex ? 'opacity-95 pointer-events-auto scale-100' : 'opacity-0 pointer-events-none scale-105'
+            index === currentIndex ? 'opacity-100 pointer-events-auto scale-100' : 'opacity-0 pointer-events-none scale-105'
           } transform duration-1000`}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={slide.imageUrl}
             alt={slide.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-center"
           />
         </div>
       ))}
