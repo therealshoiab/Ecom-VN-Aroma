@@ -101,51 +101,7 @@ export default function PromotionalCarousel() {
       ))}
 
       {/* Gentle Soft Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-white/30 via-transparent to-white/20 pointer-events-none" />
-
-      {/* Glassmorphic Promotion Banner - CENTERED */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] sm:w-[85%] max-w-lg z-10 p-6 md:p-8 bg-black/45 backdrop-blur-md border border-white/10 shadow-2xl flex flex-col justify-between text-center items-center rounded-lg">
-        <div className="space-y-2">
-          <span className="text-[10px] uppercase tracking-[0.3em] text-[#C5A880] font-semibold block">
-            Seasonal Exhibition
-          </span>
-          <h2 className="text-2xl md:text-4xl font-serif font-light text-white tracking-tight leading-none">
-            {slides[currentIndex].title}
-          </h2>
-          <p className="text-xs md:text-sm text-gray-200 font-light leading-relaxed mt-3">
-            {slides[currentIndex].subtitle}
-          </p>
-        </div>
-
-        {/* Indicators and buttons */}
-        <div className="flex flex-col items-center gap-4 w-full pt-5 mt-4 border-t border-white/10">
-          <div className="flex gap-1.5">
-            {slides.map((_, idx) => (
-              <span
-                key={idx}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  idx === currentIndex ? 'w-6 bg-[#C5A880]' : 'w-1.5 bg-white/30'
-                }`}
-              />
-            ))}
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              onClick={handlePrev}
-              className="p-2 rounded-full bg-white/5 border border-white/15 text-white hover:bg-white/20 hover:text-[#C5A880] transition-colors"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={handleNext}
-              className="p-2 rounded-full bg-white/5 border border-white/15 text-white hover:bg-white/20 hover:text-[#C5A880] transition-colors"
-            >
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      </div>
+      <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-transparent to-white/10 pointer-events-none" />
     </div>
   );
 }

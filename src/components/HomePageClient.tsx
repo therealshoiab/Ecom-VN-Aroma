@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useCart } from '@/context/CartContext';
-import { ShoppingBag, ArrowDown, Sparkles, Flame, Droplets, Trees } from 'lucide-react';
+import { ShoppingBag, ArrowDown, Sparkles, Flame, Droplets, Trees, Heart } from 'lucide-react';
 import Link from 'next/link';
 import PromotionalCarousel from '@/components/PromotionalCarousel';
 
@@ -36,6 +36,16 @@ export default function HomePageClient({ products }: HomePageClientProps) {
   const { addToCart, setIsCartOpen } = useCart();
   const [activeFilter, setActiveFilter] = useState<'All' | 'Bestsellers' | 'New' | 'Woody' | 'Floral' | 'Spicy' | 'Fresh'>('All');
   const [toast, setToast] = useState<ToastState>({ show: false, message: '' });
+  const [favorites, setFavorites] = useState<Record<string, boolean>>({});
+
+  const toggleFavorite = (productId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setFavorites((prev) => ({
+      ...prev,
+      [productId]: !prev[productId],
+    }));
+  };
 
   // Scent family icons mapper
   const getFamilyIcon = (family: string) => {
@@ -183,30 +193,22 @@ export default function HomePageClient({ products }: HomePageClientProps) {
           {filteredProducts.map((product) => {
             const isSet = product.id === 'prod-discovery-trio';
             return (
-              <Link
+              <div
                 key={product.id}
-                href={`/product/${product.slug}`}
-                className="group flex flex-col justify-between p-6 bg-white/30 backdrop-blur-md border border-white/20 shadow-sm hover:shadow-xl hover:bg-white/50 hover:border-[#C5A880]/30 transition-all duration-500"
+                className="group flex flex-col justify-between relative"
               >
-                <div className="relative">
+                <Link href={`/product/${product.slug}`} className="flex flex-col h-full">
                   {/* Image Holder with Quick Add hover */}
-                  <div className="w-full aspect-square relative overflow-hidden flex items-center justify-center p-4">
+                  <div className="w-full aspect-square relative bg-[#F5F2EB] flex items-center justify-center p-6 overflow-hidden rounded-lg">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={product.imageUrls[0]}
                       alt={product.name}
-                      className="object-contain h-[90%] w-[90%] transition-transform duration-700 group-hover:scale-103"
+                      className="object-contain h-[85%] w-[85%] transition-transform duration-700 group-hover:scale-105"
                     />
 
-                    {/* Featured/Bestseller badge */}
-                    {product.isFeatured && (
-                      <span className="absolute top-0 left-0 text-[8px] uppercase tracking-widest bg-[#C5A880] text-white px-2 py-1 z-10 font-bold rounded-br-md">
-                        Bestseller
-                      </span>
-                    )}
-
                     {/* Scent Family Identifier */}
-                    <div className="absolute top-0 right-0 flex items-center gap-1 bg-white/70 backdrop-blur-sm border border-white/30 px-2 py-0.5 text-[8px] uppercase tracking-widest text-[#C5A880] z-10 font-bold">
+                    <div className="absolute top-3 left-3 flex items-center gap-1 bg-white/80 backdrop-blur-sm border border-white/30 px-2 py-0.5 text-[8px] uppercase tracking-widest text-[#C5A880] z-10 font-bold rounded">
                       {product.tags.includes('Woody') && getFamilyIcon('Woody')}
                       {product.tags.includes('Floral') && getFamilyIcon('Floral')}
                       {product.tags.includes('Spicy') && getFamilyIcon('Spicy')}
@@ -214,45 +216,70 @@ export default function HomePageClient({ products }: HomePageClientProps) {
                       <span className="ml-1">{product.tags.split(',')[0]}</span>
                     </div>
 
+                    {/* Interactive Heart Button (Favorites) */}
+                    <button
+                      onClick={(e) => toggleFavorite(product.id, e)}
+                      className="absolute top-3 right-3 z-20 bg-white p-2.5 rounded-full shadow-sm text-gray-400 hover:text-red-500 hover:scale-105 transition-all"
+                    >
+                      <Heart className={`w-4 h-4 transition-colors ${favorites[product.id] ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
+                    </button>
+
                     {/* Quick Add Overlay */}
-                    <div className="absolute inset-x-2 bottom-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-10">
+                    <div className="absolute inset-x-3 bottom-3 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-10">
                       <button
                         onClick={(e) => handleQuickAdd(product, e)}
-                        className="w-full bg-[#C5A880] text-white py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-[#b0936b] transition-colors flex items-center justify-center gap-1.5 shadow-md rounded-md"
+                        className="w-full bg-white/95 hover:bg-[#C5A880] text-gray-800 hover:text-white backdrop-blur-sm py-3 text-[10px] uppercase tracking-widest font-bold transition-colors flex items-center justify-center gap-1.5 shadow-md rounded-md"
                       >
-                        <ShoppingBag className="w-3 h-3" />
+                        <ShoppingBag className="w-3.5 h-3.5" />
                         Quick Add ({isSet ? '3 x 50ml' : '50ml'})
                       </button>
                     </div>
                   </div>
 
-                  {/* Scent Notes teaser */}
-                  <p className="text-[9px] text-[#C5A880] uppercase tracking-[0.2em] font-semibold mt-4">
-                    {product.topNotes.split(',')[0]} · {product.heartNotes.split(',')[0]} · {product.baseNotes.split(',')[0]}
-                  </p>
+                  {/* Details Block below the image container */}
+                  <div className="mt-4 flex flex-col space-y-1">
+                    {/* Status/Badge styled text */}
+                    {product.isFeatured ? (
+                      <span className="text-[10px] uppercase tracking-widest text-[#C5A880] font-bold">
+                        Bestseller
+                      </span>
+                    ) : product.tags.toLowerCase().includes('new arrival') ? (
+                      <span className="text-[10px] uppercase tracking-widest text-blue-600 font-bold">
+                        New
+                      </span>
+                    ) : (
+                      <span className="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">
+                        Signature Collection
+                      </span>
+                    )}
 
-                  <h3 className="font-serif text-lg font-light text-[#111111] mt-1.5 group-hover:text-[#C5A880] transition-colors">
-                    {product.name}
-                  </h3>
-                  <p className="text-[11px] text-gray-500 italic mt-0.5 leading-snug">
-                    {product.tagline}
-                  </p>
-                </div>
+                    {/* Product Name */}
+                    <h3 className="font-sans font-bold text-base text-[#111111] group-hover:text-[#C5A880] transition-colors leading-tight">
+                      {product.name}
+                    </h3>
 
-                <div className="mt-4 flex items-baseline gap-2 border-t border-black/5 pt-3.5">
-                  <span className="text-xs font-bold text-[#111111]">
-                    ₹{product.price.toLocaleString('en-IN')}
-                  </span>
-                  {product.compareAtPrice && (
-                    <span className="text-[10px] text-gray-400 line-through">
-                      ₹{product.compareAtPrice.toLocaleString('en-IN')}
-                    </span>
-                  )}
-                  <span className="text-[9px] uppercase tracking-wider text-gray-400 ml-auto font-semibold">
-                    {isSet ? 'Set' : '50ml'}
-                  </span>
-                </div>
-              </Link>
+                    {/* Tagline / Subtitle */}
+                    <p className="text-xs text-gray-500 font-light leading-snug">
+                      {product.tagline}
+                    </p>
+
+                    {/* Price and sizing */}
+                    <div className="flex items-center gap-2 pt-1 border-t border-black/5 mt-2">
+                      <span className="text-sm font-bold text-[#111111]">
+                        ₹{product.price.toLocaleString('en-IN')}
+                      </span>
+                      {product.compareAtPrice && (
+                        <span className="text-xs text-gray-400 line-through">
+                          ₹{product.compareAtPrice.toLocaleString('en-IN')}
+                        </span>
+                      )}
+                      <span className="text-[9px] uppercase tracking-wider text-gray-400 ml-auto font-semibold">
+                        {isSet ? 'Set' : '50ml'}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              </div>
             );
           })}
         </div>
