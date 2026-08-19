@@ -6,5 +6,5 @@ pages_build_output_dir = ".vercel/output"
 [[d1_databases]]
 binding = "DB"
 database_name = "vn-aroma-db"
-database_id = "ce486519-79d2-418b-84eb-e342a073d4d3"
+database_id = "140abc4c-c838-4bac-8ed5-7ffcfcd63c83"
 migrations_dir = "./drizzle"
