@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { verifySessionToken } from '@/lib/auth';
 import { getDb } from '@/db';
-import { orders, orderItems, products, variants } from '@/db/schema';
+import { orders, orderItems, products, variants, settings } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import AdminPageClient from '@/components/AdminPageClient';
 
@@ -66,10 +66,35 @@ export default async function AdminPage() {
       .innerJoin(products, eq(variants.productId, products.id))
       .all();
 
+    // 3. Fetch all products
+    const dbProducts = await db.select().from(products).all();
+    const formattedProducts = dbProducts.map((p) => {
+      let images: string[] = ['/images/trio.png'];
+      try {
+        const parsed = JSON.parse(p.imageUrls);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          images = parsed;
+        }
+      } catch (e) {}
+      return {
+        ...p,
+        imageUrls: images,
+      };
+    });
+
+    // 4. Fetch settings
+    const dbSettings = await db.select().from(settings).all();
+    const settingsMap = dbSettings.reduce((acc, curr) => {
+      acc[curr.key] = curr.value;
+      return acc;
+    }, {} as Record<string, string>);
+
     return (
       <AdminPageClient
         initialOrders={ordersWithItems}
         initialVariants={inventoryVariants}
+        initialProducts={formattedProducts}
+        initialSettings={settingsMap}
       />
     );
   } catch (e) {
@@ -78,6 +103,8 @@ export default async function AdminPage() {
       <AdminPageClient
         initialOrders={[]}
         initialVariants={[]}
+        initialProducts={[]}
+        initialSettings={{}}
       />
     );
   }

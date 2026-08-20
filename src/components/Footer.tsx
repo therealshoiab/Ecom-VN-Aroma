@@ -7,7 +7,7 @@ export default function Footer() {
   return (
     <footer className="bg-[#FAF9F6] text-gray-600 font-sans border-t border-[#E6E3DB] py-16 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Brand Info */}
           <div className="space-y-4">
             <h2 className="text-xl font-serif text-[#111111] tracking-widest uppercase font-semibold">VN Aroma</h2>
@@ -37,28 +37,6 @@ export default function Footer() {
               <li><span className="text-gray-400">Razorpay Test Checkout</span></li>
               <li><span className="text-gray-400">Cloudflare D1 Database</span></li>
             </ul>
-          </div>
-
-          {/* Newsletter */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-[#111111]">Newsletter</h3>
-            <p className="text-xs text-gray-500 leading-relaxed">
-              Subscribe to receive olfactory inspiration, private event invitations, and new collection launches.
-            </p>
-            <form onSubmit={(e) => e.preventDefault()} className="flex">
-              <input
-                type="email"
-                placeholder="Email Address"
-                className="bg-transparent border border-gray-300 px-3 py-2 text-xs w-full focus:outline-none focus:border-[#C5A880] text-[#111111]"
-                required
-              />
-              <button
-                type="submit"
-                className="bg-[#C5A880] text-white px-4 text-xs font-semibold hover:bg-[#111111] transition-colors uppercase tracking-widest"
-              >
-                Join
-              </button>
-            </form>
           </div>
         </div>
 

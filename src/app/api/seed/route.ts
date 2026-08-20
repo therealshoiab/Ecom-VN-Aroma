@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/db';
-import { users, products, variants } from '@/db/schema';
+import { users, products, variants, orders, orderItems, cartItems } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const runtime = 'edge';
@@ -108,6 +108,10 @@ export async function GET() {
         quantity INTEGER NOT NULL DEFAULT 1,
         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE
+      );`,
+      `CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
       );`
     ];
 
@@ -115,7 +119,13 @@ export async function GET() {
       await db.run(query);
     }
 
+    // Initialize settings
+    await db.run(`INSERT OR IGNORE INTO settings (key, value) VALUES ('banner_message', '✨ DISCOVER OUR HANDCRAFTED BOUTIQUE PERFUME COLLECTION | FREE SHIPPING PAN-INDIA ✨')`);
+
     // 2. Clear existing seed data to ensure fresh seed
+    await db.delete(cartItems);
+    await db.delete(orderItems);
+    await db.delete(orders);
     await db.delete(variants);
     await db.delete(products);
 

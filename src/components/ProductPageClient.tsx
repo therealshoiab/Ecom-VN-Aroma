@@ -121,12 +121,12 @@ export default function ProductPageClient({ product, variants, related }: Produc
         {/* Left Column: Image Gallery */}
         <div className="lg:col-span-7 flex flex-col gap-6">
           {/* Main Frame */}
-          <div className="w-full aspect-[4/5] bg-white border border-[#E6E3DB] flex items-center justify-center p-12 overflow-hidden relative">
+          <div className="w-full aspect-[4/5] bg-white border border-[#E6E3DB] flex items-center justify-center overflow-hidden relative">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={activeImage}
               alt={product.name}
-              className="object-contain max-h-full max-w-full p-4 transition-all duration-500"
+              className="object-cover w-full h-full transition-all duration-500"
             />
           </div>
 
@@ -137,12 +137,12 @@ export default function ProductPageClient({ product, variants, related }: Produc
                 <button
                   key={idx}
                   onClick={() => setActiveImage(url)}
-                  className={`w-20 h-24 bg-white border flex items-center justify-center p-2 transition-all overflow-hidden ${
+                  className={`w-20 h-24 bg-white border flex items-center justify-center transition-all overflow-hidden ${
                     activeImage === url ? 'border-[#111111] scale-[0.98] shadow-sm' : 'border-[#E6E3DB] hover:border-gray-500'
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={url} alt={`Thumbnail ${idx + 1}`} className="object-contain h-full w-full" />
+                  <img src={url} alt={`Thumbnail ${idx + 1}`} className="object-cover h-full w-full" />
                 </button>
               ))}
             </div>
@@ -351,12 +351,12 @@ export default function ProductPageClient({ product, variants, related }: Produc
                 className="group flex flex-col justify-between"
               >
                 <div>
-                  <div className="w-full aspect-[4/5] bg-white border border-[#E6E3DB] flex items-center justify-center p-8 transition-colors duration-500 group-hover:border-gray-800 relative">
+                  <div className="w-full aspect-[4/5] bg-white border border-[#E6E3DB] flex items-center justify-center overflow-hidden transition-colors duration-500 group-hover:border-gray-800 relative">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={item.imageUrls[0]}
                       alt={item.name}
-                      className="object-contain h-[75%] w-[75%] transition-transform duration-700 group-hover:scale-103"
+                      className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-103"
                     />
                   </div>
                   <p className="text-[9px] text-[#C5A880] uppercase tracking-[0.2em] font-semibold mt-4">

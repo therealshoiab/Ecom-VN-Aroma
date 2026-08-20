@@ -65,3 +65,9 @@ export const cartItems = sqliteTable('cart_items', {
   variantId: text('variant_id').references(() => variants.id, { onDelete: 'cascade' }),
   quantity: integer('quantity').notNull().default(1),
 });
+
+export const settings = sqliteTable('settings', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+});
+

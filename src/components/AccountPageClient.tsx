@@ -111,6 +111,9 @@ export default function AccountPageClient() {
       setUser(data.user);
       setIsLoggedIn(true);
       await syncCartWithDb(); // Merge local storage items into user cart
+      if (data.user && data.user.role === 'admin') {
+        window.location.href = '/admin';
+      }
     } catch (err: any) {
       setFormError(err.message);
     } finally {

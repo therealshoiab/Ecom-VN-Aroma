@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { ShoppingBag, User, LogOut } from 'lucide-react';
@@ -9,6 +9,24 @@ import { useRouter } from 'next/navigation';
 export default function Header() {
   const { cartCount, setIsCartOpen, isLoggedIn, setIsLoggedIn, clearCart } = useCart();
   const router = useRouter();
+  const [bannerMessage, setBannerMessage] = useState<string>('✨ DISCOVER OUR HANDCRAFTED BOUTIQUE PERFUME COLLECTION | FREE SHIPPING PAN-INDIA ✨');
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch('/api/admin/settings');
+        if (res.ok) {
+          const data = (await res.json()) as any;
+          if (data && data.settings && data.settings.banner_message) {
+            setBannerMessage(data.settings.banner_message);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load banner settings:', e);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -25,6 +43,11 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-40 bg-[#FAF9F6]/80 backdrop-blur-md border-b border-[#E6E3DB] font-sans">
+      {bannerMessage && (
+        <div className="bg-[#111111] text-[#FAF9F6] text-[8px] sm:text-[9px] uppercase tracking-[0.25em] py-2 px-4 text-center font-medium border-b border-[#E6E3DB]/10 select-none">
+          {bannerMessage}
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
           {/* Nav Links - Left (Hidden on small screens) */}

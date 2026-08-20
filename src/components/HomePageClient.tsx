@@ -114,52 +114,7 @@ export default function HomePageClient({ products }: HomePageClientProps) {
       {/* Promotional Slideshow Header */}
       <PromotionalCarousel />
 
-      {/* Scent Philosophy Callout */}
-      <section id="about" className="py-24 bg-white border-b border-[#E6E3DB]">
-        <div className="max-w-7xl mx-auto text-center px-6 space-y-6">
-          <h3 className="font-serif text-2xl sm:text-3xl font-light italic text-[#C5A880]">"For Men & Women"</h3>
-          <p className="text-base sm:text-lg font-serif text-[#111111] leading-relaxed max-w-2xl mx-auto font-light">
-            We reject the industry's traditional gender divides. A fragrance is a personal landscape, not a gender label. VN Aroma creates olfactory portraits that belong to anyone who wears them.
-          </p>
-          <div className="w-12 h-[1px] bg-[#C5A880] mx-auto my-6" />
-          <p className="text-xs text-gray-400 uppercase tracking-widest">
-            Clear Square Glass / Heavy Bakelite Caps / Pure Colored Essences
-          </p>
 
-          {/* Three Glassmorphic Tabs/Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12 max-w-5xl mx-auto text-left">
-            <div className="bg-[#FAF9F6]/80 backdrop-blur-md border border-[#E6E3DB] p-6 space-y-3 rounded-lg hover:border-[#C5A880]/40 hover:shadow-md transition-all duration-300">
-              <div className="w-9 h-9 bg-[#C5A880]/15 rounded-full flex items-center justify-center text-[#C5A880]">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <h4 className="font-serif text-xs font-bold text-[#111111] uppercase tracking-wider">100% Pure Essences</h4>
-              <p className="text-[11px] text-gray-500 font-light leading-relaxed">
-                Formulated with natural organic absolutes and concentrated oils for premium silage.
-              </p>
-            </div>
-
-            <div className="bg-[#FAF9F6]/80 backdrop-blur-md border border-[#E6E3DB] p-6 space-y-3 rounded-lg hover:border-[#C5A880]/40 hover:shadow-md transition-all duration-300">
-              <div className="w-9 h-9 bg-[#C5A880]/15 rounded-full flex items-center justify-center text-[#C5A880]">
-                <Droplets className="w-4 h-4" />
-              </div>
-              <h4 className="font-serif text-xs font-bold text-[#111111] uppercase tracking-wider">Boutique Design</h4>
-              <p className="text-[11px] text-gray-500 font-light leading-relaxed">
-                Presented in premium heavy square glass bottles with sleek, tactile black caps.
-              </p>
-            </div>
-
-            <div className="bg-[#FAF9F6]/80 backdrop-blur-md border border-[#E6E3DB] p-6 space-y-3 rounded-lg hover:border-[#C5A880]/40 hover:shadow-md transition-all duration-300">
-              <div className="w-9 h-9 bg-[#C5A880]/15 rounded-full flex items-center justify-center text-[#C5A880]">
-                <Trees className="w-4 h-4" />
-              </div>
-              <h4 className="font-serif text-xs font-bold text-[#111111] uppercase tracking-wider">Gender Fluid</h4>
-              <p className="text-[11px] text-gray-500 font-light leading-relaxed">
-                Olfactory portraits created to represent personal character rather than tags.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Catalog Section */}
       <section id="catalog" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
@@ -199,12 +154,12 @@ export default function HomePageClient({ products }: HomePageClientProps) {
               >
                 <Link href={`/product/${product.slug}`} className="flex flex-col h-full">
                   {/* Image Holder with Quick Add hover */}
-                  <div className="w-full aspect-square relative bg-[#F5F2EB] flex items-center justify-center p-6 overflow-hidden rounded-lg">
+                  <div className="w-full aspect-square relative bg-[#F5F2EB] flex items-center justify-center overflow-hidden rounded-lg">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={product.imageUrls[0]}
                       alt={product.name}
-                      className="object-contain h-[85%] w-[85%] transition-transform duration-700 group-hover:scale-105"
+                      className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
                     />
 
                     {/* Scent Family Identifier */}
@@ -320,14 +275,77 @@ export default function HomePageClient({ products }: HomePageClientProps) {
             </div>
 
             {/* Aesthetic Showcase photo container */}
-            <div className="aspect-[4/3] bg-white/75 border border-[#E6E3DB] shadow-md flex items-center justify-center p-8 relative overflow-hidden group rounded-lg">
+            <div className="aspect-[4/3] bg-white/75 border border-[#E6E3DB] shadow-md flex items-center justify-center relative overflow-hidden group rounded-lg">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/images/trio.png"
+                src="/images/trio_luxury.jpg"
                 alt="Boutique perfume aesthetic"
-                className="object-contain h-[85%] w-[85%] opacity-100 group-hover:scale-105 transition-transform duration-700"
+                className="object-cover w-full h-full opacity-100 group-hover:scale-105 transition-transform duration-700"
               />
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Scent Philosophy Section (Opposite layout of The Craft: Image on LEFT, Text on RIGHT) */}
+      <section id="about" className="bg-white text-[#111111] border-t border-[#E6E3DB] py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+            
+            {/* Aesthetic Showcase photo container - LEFT */}
+            <div className="aspect-[4/3] bg-[#FAF9F6] border border-[#E6E3DB] shadow-md flex items-center justify-center relative overflow-hidden group rounded-lg">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/gender_neutral.jpg"
+                alt="Gender fluid luxury perfume aesthetic"
+                className="object-cover w-full h-full opacity-100 group-hover:scale-105 transition-transform duration-700"
+              />
+            </div>
+
+            {/* Scent Philosophy Details - RIGHT */}
+            <div className="space-y-6">
+              <span className="text-[10px] uppercase tracking-[0.3em] text-[#C5A880] font-semibold">Gender Fluidity</span>
+              <h2 className="text-3xl sm:text-4xl font-serif font-light tracking-tight text-[#111111] italic">
+                "For Men & Women"
+              </h2>
+              <p className="text-sm text-gray-600 leading-relaxed font-light">
+                We reject the industry's traditional gender divides. A fragrance is a personal landscape, not a gender label. VN Aroma creates olfactory portraits that belong to anyone who wears them.
+              </p>
+
+              {/* Three Aspects List */}
+              <div className="space-y-5 pt-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 bg-[#C5A880]/10 rounded-full flex items-center justify-center text-[#C5A880] flex-shrink-0">
+                    <Sparkles className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="font-serif text-sm font-semibold text-[#111111]">100% Pure Essences</h4>
+                    <p className="text-xs text-gray-500 font-light">Formulated with natural organic absolutes and concentrated oils for premium sillage.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 bg-[#C5A880]/10 rounded-full flex items-center justify-center text-[#C5A880] flex-shrink-0">
+                    <Droplets className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="font-serif text-sm font-semibold text-[#111111]">Boutique Design</h4>
+                    <p className="text-xs text-gray-500 font-light">Presented in premium heavy square glass bottles with sleek, tactile black caps.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 bg-[#C5A880]/10 rounded-full flex items-center justify-center text-[#C5A880] flex-shrink-0">
+                    <Trees className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="font-serif text-sm font-semibold text-[#111111]">Gender Fluid</h4>
+                    <p className="text-xs text-gray-500 font-light">Olfactory portraits created to represent personal character rather than tags.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>

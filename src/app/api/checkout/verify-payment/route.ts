@@ -53,22 +53,27 @@ export async function POST(req: Request) {
       items,
       orderNumber,
       isMock,
+      isCOD,
     } = (await req.json()) as any;
 
-    if (!razorpay_order_id || !razorpay_payment_id || !shippingAddress || !items || !orderNumber) {
+    if (!shippingAddress || !items || !orderNumber) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
+    }
+
+    if (!isCOD && (!razorpay_order_id || !razorpay_payment_id)) {
+      return NextResponse.json({ error: 'Missing payment parameters for online checkout' }, { status: 400 });
     }
 
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
-    // 1. Signature Verification
-    if (!isMock && keySecret && keySecret !== 'razorpay_secret_placeholder') {
+    // 1. Signature Verification (Only if NOT Cash on Delivery)
+    if (!isCOD && !isMock && keySecret && keySecret !== 'razorpay_secret_placeholder') {
       const isValid = await verifySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature, keySecret);
       if (!isValid) {
         return NextResponse.json({ error: 'Invalid payment signature verification' }, { status: 400 });
       }
     } else {
-      console.log('📢 [MOCK PAYMENTS] Bypassing payment signature verification.');
+      console.log(isCOD ? '📢 [COD ORDER] Bypassing online signature verification.' : '📢 [MOCK PAYMENTS] Bypassing payment signature verification.');
     }
 
     const db = getDb();
@@ -95,9 +100,9 @@ export async function POST(req: Request) {
       totalAmount,
       shippingAddress: JSON.stringify(shippingAddress),
       status: 'Processing',
-      paymentStatus: 'Paid',
-      razorpayOrderId: razorpay_order_id,
-      razorpayPaymentId: razorpay_payment_id,
+      paymentStatus: isCOD ? 'COD' : 'Paid',
+      razorpayOrderId: isCOD ? 'cod_order' : razorpay_order_id,
+      razorpayPaymentId: isCOD ? 'cod_payment' : razorpay_payment_id,
       createdAt: Math.floor(Date.now() / 1000),
     });
 
@@ -147,13 +152,19 @@ export async function POST(req: Request) {
       .map((item: any) => `<li>${item.name} (${item.size}) x ${item.quantity} - ₹${(item.price * item.quantity).toLocaleString('en-IN')}</li>`)
       .join('');
 
+    const line1 = shippingAddress.houseFlatNo || shippingAddress.addressLine1 || '';
+    const line2 = shippingAddress.areaStreetNearby || shippingAddress.addressLine2 || '';
+    const zip = shippingAddress.pincode || shippingAddress.postalCode || '';
+    const paymentMethodText = isCOD ? 'Cash on Delivery (COD)' : 'Paid Online (Razorpay)';
+
     const emailHtml = `
       <div style="font-family: 'Playfair Display', Georgia, serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #FAF9F6; color: #111111; border: 1px solid #E6E3DB;">
         <h1 style="text-align: center; text-transform: uppercase; tracking-wider; font-size: 24px;">VN Aroma</h1>
         <p style="text-align: center; font-size: 10px; text-transform: uppercase; color: #C5A880; margin-top: -10px;">For Men & Women</p>
         <hr style="border: 0; border-top: 1px solid #E6E3DB; margin: 20px 0;" />
         <h2 style="font-size: 18px; font-weight: normal;">Thank you for your order.</h2>
-        <p style="font-size: 13px; line-height: 1.6; color: #555;">We have successfully received your payment for order <strong>${orderNumber}</strong>. Our olfactory artisans are now preparing your parcel.</p>
+        <p style="font-size: 13px; line-height: 1.6; color: #555;">We have successfully received your order <strong>${orderNumber}</strong>. Our olfactory artisans are now preparing your parcel.</p>
+        <p style="font-size: 13px; color: #555;"><strong>Payment Method:</strong> ${paymentMethodText}</p>
         
         <h3 style="font-size: 14px; text-transform: uppercase; margin-top: 30px; border-bottom: 1px solid #E6E3DB; padding-bottom: 5px;">Your Selections</h3>
         <ul style="font-size: 13px; padding-left: 20px; line-height: 1.8; color: #333;">
@@ -165,9 +176,9 @@ export async function POST(req: Request) {
         <h3 style="font-size: 14px; text-transform: uppercase; margin-top: 30px; border-bottom: 1px solid #E6E3DB; padding-bottom: 5px;">Delivery Address</h3>
         <p style="font-size: 12px; line-height: 1.5; color: #555;">
           ${shippingAddress.name}<br />
-          ${shippingAddress.addressLine1}<br />
-          ${shippingAddress.addressLine2 ? `${shippingAddress.addressLine2}<br />` : ''}
-          ${shippingAddress.city}, ${shippingAddress.state} - ${shippingAddress.postalCode}<br />
+          ${line1}<br />
+          ${line2 ? `${line2}<br />` : ''}
+          ${shippingAddress.city}, ${shippingAddress.state} - ${zip}<br />
           Phone: ${shippingAddress.phone}
         </p>
         
@@ -181,6 +192,37 @@ export async function POST(req: Request) {
       subject: `Order Confirmation - ${orderNumber} | VN Aroma`,
       html: emailHtml,
     });
+
+    // Also send an email notification to the Admin about the new order
+    try {
+      const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_FROM || 'admin@vn-aroma.pages.dev';
+      const adminEmailHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; background-color: #fcfcfc;">
+          <h2 style="color: #c5a880; text-transform: uppercase;">New Order Received!</h2>
+          <p>Order Number: <strong>${orderNumber}</strong></p>
+          <p>Payment Method: <strong>${paymentMethodText}</strong></p>
+          <p>Customer: ${shippingAddress.name} (${customerEmail})</p>
+          <p>Phone: ${shippingAddress.phone}</p>
+          <h3>Selections</h3>
+          <ul>${itemsHtml}</ul>
+          <p>Total Amount: <strong>₹${totalAmount.toLocaleString('en-IN')}</strong></p>
+          <h3>Shipping Address</h3>
+          <p>
+            ${line1}<br />
+            ${line2 ? `${line2}<br />` : ''}
+            ${shippingAddress.city}, ${shippingAddress.state} - ${zip}
+          </p>
+          <a href="https://vn-aroma.pages.dev/admin" style="display: inline-block; padding: 10px 20px; background-color: #c5a880; color: white; text-decoration: none; font-weight: bold; margin-top: 20px;">Go to Admin Panel</a>
+        </div>
+      `;
+      await sendEmail({
+        to: adminEmail,
+        subject: `[NEW ORDER] ${orderNumber} - ₹${totalAmount.toLocaleString('en-IN')}`,
+        html: adminEmailHtml,
+      });
+    } catch (adminEmailError) {
+      console.error('Failed to send admin order notification email:', adminEmailError);
+    }
 
     return NextResponse.json({ success: true, orderNumber });
   } catch (e: any) {
