@@ -9,20 +9,30 @@ import AdminPageClient from '@/components/AdminPageClient';
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
+function isNextRedirectError(error: any) {
+  return (
+    error &&
+    typeof error === 'object' &&
+    'digest' in error &&
+    typeof error.digest === 'string' &&
+    error.digest.startsWith('NEXT_REDIRECT')
+  );
+}
+
 export default async function AdminPage() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('session')?.value;
+  
+  if (!token) {
+    redirect('/account');
+  }
+
+  const session = await verifySessionToken(token);
+  if (!session || session.role !== 'admin') {
+    redirect('/account');
+  }
+
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('session')?.value;
-    
-    if (!token) {
-      redirect('/account');
-    }
-
-    const session = await verifySessionToken(token);
-    if (!session || session.role !== 'admin') {
-      redirect('/account');
-    }
-
     const db = getDb();
 
     // 1. Fetch all orders with details
@@ -98,6 +108,9 @@ export default async function AdminPage() {
       />
     );
   } catch (e) {
+    if (isNextRedirectError(e)) {
+      throw e;
+    }
     // Fallback for static build
     return (
       <AdminPageClient
