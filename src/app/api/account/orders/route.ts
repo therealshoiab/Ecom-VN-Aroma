@@ -23,7 +23,33 @@ export async function GET(req: Request) {
 
     const db = getDb();
     
-    // Fetch all orders for this user
+    // 1. Fetch guest orders and link them to this user's account if the email matches
+    try {
+      const guestOrders = await db
+        .select()
+        .from(orders)
+        .where(eq(orders.userId, null as any))
+        .all();
+
+      for (const order of guestOrders) {
+        try {
+          const addressObj = JSON.parse(order.shippingAddress);
+          if (addressObj && addressObj.email && addressObj.email.toLowerCase() === user.email.toLowerCase()) {
+            // Link order to this user's account
+            await db
+              .update(orders)
+              .set({ userId: user.userId })
+              .where(eq(orders.id, order.id));
+          }
+        } catch (e) {
+          console.error('Failed to parse shippingAddress/link guest order:', e);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to fetch/link guest orders:', e);
+    }
+
+    // 2. Fetch all orders for this user (now including newly linked guest orders!)
     const dbOrders = await db
       .select()
       .from(orders)

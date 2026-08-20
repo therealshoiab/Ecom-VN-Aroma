@@ -93,12 +93,14 @@ export async function POST(req: Request) {
 
     // 3. Write Order Record
     const orderId = crypto.randomUUID();
+    const finalEmail = user ? user.email : email;
+    const shippingWithEmail = { ...shippingAddress, email: finalEmail };
     await db.insert(orders).values({
       id: orderId,
       userId: user ? user.userId : null,
       orderNumber,
       totalAmount,
-      shippingAddress: JSON.stringify(shippingAddress),
+      shippingAddress: JSON.stringify(shippingWithEmail),
       status: 'Processing',
       paymentStatus: isCOD ? 'COD' : 'Paid',
       razorpayOrderId: isCOD ? 'cod_order' : razorpay_order_id,

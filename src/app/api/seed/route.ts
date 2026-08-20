@@ -128,22 +128,19 @@ export async function GET() {
     await db.delete(orders);
     await db.delete(variants);
     await db.delete(products);
+    await db.delete(users);
 
-    // 3. Create Admin User if not exists
+    // 3. Create Admin User
     const adminEmail = 'admin@vnaroma.com';
-    const existingAdmin = await db.select().from(users).where(eq(users.email, adminEmail)).get();
-    
-    if (!existingAdmin) {
-      const hashedAdminPassword = await hashPassword('admin123');
-      await db.insert(users).values({
-        id: crypto.randomUUID(),
-        email: adminEmail,
-        passwordHash: hashedAdminPassword,
-        name: 'VN Aroma Admin',
-        role: 'admin',
-        createdAt: Math.floor(Date.now() / 1000),
-      });
-    }
+    const hashedAdminPassword = await hashPassword('AdminAroma2026!');
+    await db.insert(users).values({
+      id: crypto.randomUUID(),
+      email: adminEmail,
+      passwordHash: hashedAdminPassword,
+      name: 'VN Aroma Admin',
+      role: 'admin',
+      createdAt: Math.floor(Date.now() / 1000),
+    });
 
     // 4. 30 Luxury Perfumes Dataset
     const perfumesData = [
