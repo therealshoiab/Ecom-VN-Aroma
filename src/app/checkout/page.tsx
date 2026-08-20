@@ -241,7 +241,7 @@ export default function CheckoutPage() {
       await clearCart();
 
       // Redirect to success page
-      router.push(`/checkout/success?orderNumber=${verifyData.orderNumber}`);
+      router.push(`/checkout-success?orderNumber=${verifyData.orderNumber}`);
     } catch (err: any) {
       setError(err.message);
       setSubmitting(false);

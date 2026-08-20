@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "pages:build": "npx @cloudflare/next-on-pages",
+    "pages:build": "npx @cloudflare/next-on-pages && node patch-build.js",
     "pages:preview": "npx wrangler pages dev .vercel/output",
     "seed": "npx tsx src/db/seed-cli.ts",
     "start": "next start",
